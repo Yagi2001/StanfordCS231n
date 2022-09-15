@@ -27,8 +27,8 @@ def affine_forward(x, w, b):
     # will need to reshape the input into rows.                               #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-    x = np.reshape(x, (x.shape[0], -1))
-    out = np.matmul(x,w)+b
+    x_reshaped = np.reshape(x, (x.shape[0], -1))
+    out = np.matmul(x_reshaped,w)+b
 
     pass
 
@@ -63,7 +63,14 @@ def affine_backward(dout, cache):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-
+    ##Remember normally gradient of multiplication was multiplying the upstream grad with other value used
+    ##in multiplication. This is still same with vector multiplication but you need to use transpose of the
+    ##other matrix. You can always do dimension check to be sure.
+    x_reshaped = np.reshape(x, (x.shape[0], -1))
+    dx = np.matmul(dout,w.transpose())
+    dx = np.reshape(dx,(x.shape))
+    dw = np.matmul(x_reshaped.transpose(),dout)
+    db = np.sum(dout,axis =0)
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -89,6 +96,7 @@ def relu_forward(x):
     # TODO: Implement the ReLU forward pass.                                  #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    out = np.maximum(0,x)
 
     pass
 
@@ -116,6 +124,10 @@ def relu_backward(dout, cache):
     # TODO: Implement the ReLU backward pass.                                 #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    x = x>0
+    dx = x.astype(int)
+    dx = dx*dout
+
 
     pass
 
