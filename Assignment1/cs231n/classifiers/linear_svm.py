@@ -91,10 +91,13 @@ def svm_loss_vectorized(W, X, y, reg):
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     scores = X.dot(W) ##Now we have a scores matrix that has (C X N) shape
     correct_class_scores = scores[range(scores.shape[0]),y]
-    correct_class_scores = np.reshape(correct_class_scores,(X.shape[0],-1))
-    correct_class_scores = np.hstack([correct_class_scores] * W.shape[1])
-    margins = np.maximum(0, scores - correct_class_scores + 1)## I need to fix the problem with true score
-    margins[range(scores.shape[0]),y] = 0
+    correct_class_scores = np.reshape(correct_class_scores,(X.shape[0],-1))  ##We turned our array into 2D
+    correct_class_scores = np.hstack([correct_class_scores] * W.shape[1])  ## Since we are going to subtract the real
+    ## score from all scores in a row . I just changed my correct class score matrix size to be same with our scores
+    ## matrix. In each row we only have true value.
+
+    margins = np.maximum(0, scores - correct_class_scores + 1)
+    margins[range(scores.shape[0]),y] = 0  ## I need to fix the problem with true score
     loss+= np.sum(margins)/num_train
     loss += reg * np.sum(W * W)
 
@@ -120,7 +123,12 @@ def svm_loss_vectorized(W, X, y, reg):
     first_step = scores - correct_class_scores + 1
     second_step = first_step>0
     third_step = second_step.astype(int)
-    third_step[range(scores.shape[0]), y] = 0
+
+    ## All we did until now is we created a matrix that has the shape of scores matrix and values in this matrix are
+    ## only 0 (if scores - correct_class_scores + 1<=0) and 1 otherwise.
+    third_step[range(scores.shape[0]), y] = 0  ## We use a little bit different operation for calculating the gradient
+    ## for true class. Therefore I first make it zero then sum all values for each row.
+
     fourth_step = np.sum(third_step,axis=1)
     third_step[range(scores.shape[0]), y] -=fourth_step
     dW = X.transpose().dot(third_step)

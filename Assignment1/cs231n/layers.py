@@ -787,6 +787,26 @@ def svm_loss(x, y):
     # TODO: Copy over your solution from A1.
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    loss = 0
+    correct_class_scores = x[range(x.shape[0]), y]
+    correct_class_scores = np.reshape(correct_class_scores, (x.shape[0], -1))  ##We turned our array into 2D
+    correct_class_scores = np.hstack([correct_class_scores] * x.shape[1])   ## Since we are going to subtract the real
+    ## score from all scores in a row . I just changed my correct class score matrix size to be same with our scores
+    ## matrix. In each row we only have true value.
+    margins = np.maximum(0, x - correct_class_scores + 1)
+    margins[range(x.shape[0]),y] = 0  ## I need to fix the problem with true score
+    loss += np.sum(margins)/x.shape[0]
+
+    first_step = x - correct_class_scores + 1
+    second_step = first_step > 0
+    third_step = second_step.astype(int)
+    ## All we did until now is we created a matrix that has the shape of scores matrix and values in this matrix are
+    ## only 0 (if scores - correct_class_scores + 1<=0) and 1 otherwise.
+    third_step[range(x.shape[0]), y] = 0  ## We use a little bit different operation for calculating the gradient
+    ## for true class. Therefore I first make it zero then sum all values for each row.
+    fourth_step = np.sum(third_step, axis=1)
+    third_step[range(x.shape[0]), y] -= fourth_step
+    dx = third_step/x.shape[0]
 
     pass
 
@@ -795,6 +815,7 @@ def svm_loss(x, y):
     #                             END OF YOUR CODE                            #
     ###########################################################################
     return loss, dx
+
 
 
 def softmax_loss(x, y):
@@ -817,6 +838,20 @@ def softmax_loss(x, y):
     # TODO: Copy over your solution from A1.
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    loss = 0
+    x = np.exp(x)  ##Scores exponential
+    sum_of_scores = np.sum(x, axis=1)
+    normalized_scores = x / sum_of_scores[:, None]
+    correct_class_scores = normalized_scores[range(x.shape[0]), y]
+    C = np.max(correct_class_scores)
+    loss_vector = C * np.log(correct_class_scores) / -C
+    loss += np.sum(loss_vector)
+    loss /= x.shape[0]
+
+    gradient_vector = normalized_scores
+    gradient_vector[range(x.shape[0]), y] -= 1   ## We add -1 for true class.
+    dx = gradient_vector/x.shape[0]
+
 
     pass
 
