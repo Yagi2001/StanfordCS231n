@@ -54,6 +54,18 @@ class TwoLayerNet(object):
         # weights and biases using the keys 'W2' and 'b2'.                         #
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+        self.params["W1"] = np.random.normal(0.0,weight_scale,size =(input_dim,hidden_dim))
+        ## In order to get hidden_dim in our outputs after multiplying input with W1 our W1 needs to be in this shape.
+        ## Again it is useful to make dimension check
+        self.params["W2"] = np.random.normal(0.0,weight_scale,size = (hidden_dim,num_classes))
+        ## It is the same thing in order to have score matrix of correct size we need W2 to be in this shape.
+        self.params["b1"] = np.zeros(hidden_dim)
+        self.params["b2"] = np.zeros(num_classes)
+        ## Sizes of bias can be confusing but you can remember as an example in cs231 n documents (linear-classify)
+        ## for 3 classes we used a bias of size 3 therefore it is the same thing in here. For b1 it is same logic
+        ## bias size should be equal to hidden_dim. Lets'say we have 25 input image and 7 classes. We don't need
+        ## (25,7) matrix for that because we will add same values for each input image therefore a size of (7,) works
+        ## fine .
 
         pass
 
@@ -87,7 +99,11 @@ class TwoLayerNet(object):
         # class scores for X and storing them in the scores variable.              #
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+        out_1, cache_1 = affine_relu_forward(X,self.params["W1"],self.params["b1"])
+        ##First we calculate the affine and relu using W1 and b1.
+        out_2,cache_2 = affine_forward(out_1,self.params["W2"],self.params["b2"])
+        ## Then we use that output to calculate the scors using(out,W2,b2)
+        scores = out_2
         pass
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -111,8 +127,15 @@ class TwoLayerNet(object):
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-        pass
+        loss,dout_2 = softmax_loss(scores,y)
+        loss += self.reg * 0.5* (np.sum(self.params["W1"] * self.params["W1"])+np.sum(self.params["W2"] * self.params["W2"]))
+        ## to calculate the regularizated loss we use all weights
+        dout_1 , grads["W2"], grads["b2"] = affine_backward(dout_2,cache_2)
+        grads["W2"] += 0.5 * 2 * self.reg * self.params["W2"]
+        dx , grads["W1"] , grads["b1"] = affine_relu_backward(dout_1,cache_1)
+        grads["W1"] += 0.5 * 2 * self.reg * self.params["W1"]
+        ## We don't do regularization with biases. And for regularization of weights we do the same thing we did before.
+        ## (the ones in Softmax.py , linear_svm.py)
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
