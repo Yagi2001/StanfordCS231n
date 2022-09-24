@@ -81,18 +81,18 @@ def softmax_loss_vectorized(W, X, y, reg):
     # regularization!                                                           #
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-    num_classes = W.shape[1]
     num_train = X.shape[0]
     scores = X.dot(W) ##Scores without normalization
-    scores = np.exp(scores)##Scores exponential
-    sum_of_scores = np.sum(scores,axis=1)
-    normalized_scores = scores/sum_of_scores[:,None]
+    C = np.reshape(np.amax(scores, axis=1), (scores.shape[0], -1))  ## Since we will use exp we dont want high values.
+    ## We subtract the highest score in each image from the other scores so we have 0 as max score.
+    scores_exp = np.exp(scores - C)##Scores exponential
+    sum_of_scores = np.sum(scores_exp,axis=1)
+    normalized_scores = scores_exp/sum_of_scores[:,None]
     correct_class_scores = normalized_scores[range(scores.shape[0]), y]
-    C = np.max(correct_class_scores)
-    loss_vector = C*np.log(correct_class_scores)/-C
-    loss+=np.sum(loss_vector)
-    loss/= num_train
-    loss+= reg*np.sum(W*W)
+    loss_vector = -np.log(correct_class_scores)
+    loss += np.sum(loss_vector)
+    loss /= num_train
+    loss += reg*np.sum(W*W)
 
     gradient_vector = normalized_scores
 
