@@ -839,9 +839,9 @@ def softmax_loss(x, y):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     loss = 0
-    C = np.reshape(np.amax(x,axis=1),(x.shape[0],-1)) ## Since we will use exp we dont want high values.
-    ## We subtract the highest score in each image from the other scores so we have 0 as max score.
-    x_exp = np.exp(x-C)  ##Scores exponential
+    ## Since we will use exp we dont want high values.
+    ## We subtract the highest score from the other scores so we have 0 as max score.
+    x_exp = np.exp(x-np.max(x))  ##Scores exponential
     sum_of_scores = np.sum(x_exp, axis=1)
     normalized_scores = x_exp / sum_of_scores[:, None]
     correct_class_scores = normalized_scores[range(x.shape[0]), y]
